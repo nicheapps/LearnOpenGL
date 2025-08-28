@@ -23,6 +23,13 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 "}\n\0";
 
+const char* fragmentShaderSourceYellow = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"    FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+"}\n\0";
+
 int main() {
 	// glfw initialize and configure
 	glfwInit();
@@ -69,6 +76,11 @@ int main() {
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragmentShader);
 
+	unsigned int fragmentShaderYellow;
+	fragmentShaderYellow = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShaderYellow, 1, &fragmentShaderSourceYellow, NULL);
+	glCompileShader(fragmentShaderYellow);
+
 	// check for fragment shader compile errors
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success)
@@ -83,6 +95,11 @@ int main() {
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
 
+	unsigned int shaderProgramYellow = glCreateProgram();
+	glAttachShader(shaderProgramYellow, vertexShader);
+	glAttachShader(shaderProgramYellow, fragmentShaderYellow);
+	glLinkProgram(shaderProgramYellow);
+
 	// check for shader program compile errors
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if (!success) {
@@ -93,15 +110,19 @@ int main() {
 	glDeleteShader(fragmentShader);
 
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f, // top right
-		0.5f, -0.5f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f, // bottom left
-		-0.5f, 0.5f, 0.0f // top left
+		-0.9f, -0.5f, 0.0f,
+		-0.5f, 0.5f, 0.0f,
+		-0.1f, -0.5f, 0.0f,
 	};
-	unsigned int indices[] = {
+	float vertices2[] = {
+		0.1f, -0.5f, 0.0f,
+		0.5f, 0.5f, 0.0f,
+		0.9f, -0.5f, 0.0f
+	};
+	/*unsigned int indices[] = {
 		0, 1, 3,
 		1, 2, 3
-	};
+	};*/
 
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
@@ -112,10 +133,22 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	unsigned int EBO;
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	unsigned int VAO2;
+	glGenVertexArrays(1, &VAO2);
+	glBindVertexArray(VAO2);
+
+	unsigned int VBO2;
+	glGenBuffers(1, &VBO2);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
+
+	/*unsigned int EBO;
 	glGenBuffers(1, &EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
 
 	// tell OpenGL how to interpret the vertex data
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -130,8 +163,12 @@ int main() {
 
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glUseProgram(shaderProgramYellow);
+		glBindVertexArray(VAO2);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
