@@ -11,6 +11,9 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+// stores how much we're seeing of each texture
+float mixValue = 0.2f;
+
 int main() {
 	// glfw initialize and configure
 	glfwInit();
@@ -83,10 +86,10 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
 	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// load image, create texture and generate mipmaps
 	int width, height, nrChannels;
@@ -137,6 +140,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		ourShader.use();
+		ourShader.setFloat("mixValue", mixValue);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glActiveTexture(GL_TEXTURE1);
@@ -162,4 +166,18 @@ void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		mixValue += 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)	
+		if (mixValue >= 1.0f)
+			mixValue = 1.0f;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		mixValue -= 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)	
+		if (mixValue <= 0.0f)
+			mixValue = 0.0f;
+	}
 }
